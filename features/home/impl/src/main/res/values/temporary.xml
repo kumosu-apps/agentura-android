@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+    <string name="screen_roomlist_a11y_open_hermes">Chat with your agent</string>
+    <string name="screen_roomlist_hermes_error_title">Couldn’t reach your agent</string>
+</resources>

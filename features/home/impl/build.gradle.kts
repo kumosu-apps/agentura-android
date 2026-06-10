@@ -27,6 +27,7 @@ android {
 setupDependencyInjection()
 
 dependencies {
+    implementation(projects.libraries.byocsdk)
     implementation(projects.appconfig)
     implementation(projects.libraries.core)
     implementation(projects.libraries.androidutils)

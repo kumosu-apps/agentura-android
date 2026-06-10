@@ -53,6 +53,7 @@ android {
 setupDependencyInjection()
 
 dependencies {
+    implementation(projects.libraries.byocsdk)
     implementation(projects.appconfig)
     implementation(projects.features.enterprise.api)
     implementation(projects.features.preferences.api)

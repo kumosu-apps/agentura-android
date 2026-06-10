@@ -12,6 +12,9 @@ package io.element.android.features.home.impl
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
+import androidx.compose.ui.res.painterResource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.calculateEndPadding
@@ -79,6 +82,7 @@ fun HomeView(
     onSetUpRecoveryClick: () -> Unit,
     onConfirmRecoveryKeyClick: () -> Unit,
     onStartChatClick: () -> Unit,
+    onHermesClick: () -> Unit,
     onCreateSpaceClick: () -> Unit,
     onRoomSettingsClick: (roomId: RoomId) -> Unit,
     onMenuActionClick: (RoomListMenuAction) -> Unit,
@@ -119,6 +123,7 @@ fun HomeView(
             onRoomClick = { if (firstThrottler.canHandle()) onRoomClick(it) },
             onOpenSettings = { if (firstThrottler.canHandle()) onSettingsClick() },
             onStartChatClick = { if (firstThrottler.canHandle()) onStartChatClick() },
+            onHermesClick = { if (firstThrottler.canHandle()) onHermesClick() },
             onCreateSpaceClick = { if (firstThrottler.canHandle()) onCreateSpaceClick() },
             onMenuActionClick = onMenuActionClick,
         )
@@ -145,6 +150,7 @@ private fun HomeScaffold(
     onRoomClick: (RoomId) -> Unit,
     onOpenSettings: () -> Unit,
     onStartChatClick: () -> Unit,
+    onHermesClick: () -> Unit,
     onCreateSpaceClick: () -> Unit,
     onMenuActionClick: (RoomListMenuAction) -> Unit,
     modifier: Modifier = Modifier,
@@ -224,7 +230,10 @@ private fun HomeScaffold(
                 floatingActionButton = {
                     when (state.currentHomeNavigationBarItem) {
                         HomeNavigationBarItem.Chats -> {
-                            HomeFloatingActionButton(onStartChatClick, CommonStrings.action_create_room)
+                            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                                HomeFloatingActionButton(onStartChatClick, CommonStrings.action_create_room)
+                                HermesFloatingActionButton(onHermesClick)
+                            }
                         }
                         HomeNavigationBarItem.Spaces -> {
                             HomeFloatingActionButton(onCreateSpaceClick, CommonStrings.action_create_space)
@@ -292,6 +301,19 @@ private fun HomeScaffold(
 }
 
 @Composable
+private fun HermesFloatingActionButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    FloatingActionButton(onClick = onClick, modifier = modifier) {
+        Icon(
+            painter = painterResource(id = R.drawable.ic_magic_wand),
+            contentDescription = stringResource(id = R.string.screen_roomlist_a11y_open_hermes),
+        )
+    }
+}
+
+@Composable
 private fun HomeFloatingActionButton(
     onClick: () -> Unit,
     contentDescription: Int,
@@ -345,6 +367,7 @@ internal fun HomeViewPreview(@PreviewParameter(HomeStateProvider::class) state: 
         onSetUpRecoveryClick = {},
         onConfirmRecoveryKeyClick = {},
         onStartChatClick = {},
+        onHermesClick = {},
         onCreateSpaceClick = {},
         onRoomSettingsClick = {},
         onReportRoomClick = {},
@@ -365,6 +388,7 @@ internal fun HomeViewA11yPreview() = ElementPreview {
         onSetUpRecoveryClick = {},
         onConfirmRecoveryKeyClick = {},
         onStartChatClick = {},
+        onHermesClick = {},
         onCreateSpaceClick = {},
         onRoomSettingsClick = {},
         onReportRoomClick = {},

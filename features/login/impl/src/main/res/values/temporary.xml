@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+    <!-- BYOC cloud sign-in -->
+    <string name="screen_onboarding_cloud_sign_in_kumosu">Sign in with KUMO.SU</string>
+    <string name="screen_onboarding_cloud_sign_in_private">Use your private cloud</string>
+    <string name="screen_onboarding_cloud_domain_title">Your cloud’s domain</string>
+    <string name="screen_onboarding_cloud_domain_hint">rghomelab.nl</string>
+    <string name="screen_onboarding_cloud_connect">Connect</string>
+    <string name="screen_onboarding_cloud_provisioning">Setting up your messenger…</string>
+</resources>

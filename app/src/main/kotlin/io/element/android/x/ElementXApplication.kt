@@ -21,6 +21,7 @@ import io.element.android.x.info.logApplicationInfo
 import io.element.android.x.initializer.CacheCleanerInitializer
 import io.element.android.x.initializer.CrashInitializer
 import io.element.android.x.initializer.PlatformInitializer
+import su.kumo.byoc.Kumo
 
 class ElementXApplication : Application(), DependencyInjectionGraphOwner, Configuration.Provider {
     override val graph: AppGraph = createGraphFactory<AppGraph.Factory>().create(this)
@@ -39,6 +40,10 @@ class ElementXApplication : Application(), DependencyInjectionGraphOwner, Config
         }
 
         logApplicationInfo(this)
+
+        // BYOC cloud session (realm sign-in + console API for provisioning
+        // backends like matrix/hermes). Restores any persisted session.
+        Kumo.init(this, appName = applicationInfo.loadLabel(packageManager).toString(), redirectScheme = "byocchat")
 
         // Disable the strict offset check for anchored draggable components, as it can cause issues with bottom sheets.
         // Remove once https://issuetracker.google.com/issues/477038695 is fixed.

@@ -278,6 +278,12 @@ private fun OnBoardingButtons(
     }
 
     ButtonColumnMolecule {
+        // BYOC: connect through the user's own cloud (provisions the matrix
+        // backend, then continues with the regular homeserver login below).
+        CloudSignInSection(
+            enabled = !isLoading,
+            onHomeserverResolved = { state.eventSink(OnBoardingEvents.OnSignIn(it)) },
+        )
         val signInButtonStringRes = if (state.canLoginWithQrCode || state.canCreateAccount) {
             R.string.screen_onboarding_sign_in_manually
         } else {

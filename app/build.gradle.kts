@@ -47,6 +47,10 @@ android {
         versionCode = Versions.VERSION_CODE
         versionName = Versions.VERSION_NAME
 
+        // Custom scheme AppAuth's redirect receiver listens on for the BYOC
+        // cloud sign-in (must match Kumo.init's redirectScheme).
+        manifestPlaceholders["appAuthRedirectScheme"] = "byocchat"
+
         // Keep abiFilter for the universalApk
         ndk {
             abiFilters += listOf("armeabi-v7a", "x86", "arm64-v8a", "x86_64")
@@ -254,6 +258,7 @@ tasks.withType<SonarResolverTask>().configureEach {
 setupDependencyInjection()
 
 dependencies {
+    implementation(projects.libraries.byocsdk)
     allLibrariesImpl()
     allServicesImpl()
     if (isEnterpriseBuild) {

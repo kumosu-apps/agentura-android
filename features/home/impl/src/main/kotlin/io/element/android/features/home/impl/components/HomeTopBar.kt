@@ -115,7 +115,8 @@ fun HomeTopBar(
                             else -> stringResource(selectedNavigationItem.labelRes)
                         }
                     }
-                    HomeNavigationBarItem.Spaces -> stringResource(selectedNavigationItem.labelRes)
+                    HomeNavigationBarItem.Spaces,
+                    HomeNavigationBarItem.Agents -> stringResource(selectedNavigationItem.labelRes)
                 }
                 Text(
                     modifier = Modifier.semantics {

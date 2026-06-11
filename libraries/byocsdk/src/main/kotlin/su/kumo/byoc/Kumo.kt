@@ -48,6 +48,16 @@ object Kumo {
      */
     suspend fun ensureBackend(appName: String): Backend = console().ensureBackend(appName)
 
+    /** Installed apps the catalog marks as agents. Throws [KumoException.SignInRequired]. */
+    suspend fun agents(): List<Backend> = console().agents()
+
+    /** Grants/updates an agent's realm API access. Throws [KumoException.SignInRequired]. */
+    suspend fun setRealmGrant(name: String, scopes: Set<String>): RealmApiGrant =
+        console().setRealmGrant(name, scopes)
+
+    /** Revokes an agent's realm API access. Throws [KumoException.SignInRequired]. */
+    suspend fun revokeRealmGrant(name: String) = console().revokeRealmGrant(name)
+
     fun signOut() {
         session?.let { client.signOut(it) }
         session = null

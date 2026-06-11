@@ -9,6 +9,8 @@
 package io.element.android.features.home.impl
 
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
+import io.element.android.features.home.impl.agents.HomeAgentsState
+import io.element.android.features.home.impl.agents.aHomeAgentsState
 import io.element.android.features.home.impl.roomlist.RoomListState
 import io.element.android.features.home.impl.roomlist.RoomListStateProvider
 import io.element.android.features.home.impl.roomlist.aRoomListState
@@ -62,6 +64,7 @@ internal fun aHomeState(
     currentHomeNavigationBarItem: HomeNavigationBarItem = HomeNavigationBarItem.Chats,
     roomListState: RoomListState = aRoomListState(),
     homeSpacesState: HomeSpacesState = aHomeSpacesState(),
+    homeAgentsState: HomeAgentsState = aHomeAgentsState(),
     canReportBug: Boolean = true,
     directLogoutState: DirectLogoutState = aDirectLogoutState(),
     eventSink: (HomeEvent) -> Unit = {}
@@ -75,5 +78,6 @@ internal fun aHomeState(
     currentHomeNavigationBarItem = currentHomeNavigationBarItem,
     roomListState = roomListState,
     homeSpacesState = homeSpacesState,
+    homeAgentsState = homeAgentsState,
     eventSink = eventSink,
 )

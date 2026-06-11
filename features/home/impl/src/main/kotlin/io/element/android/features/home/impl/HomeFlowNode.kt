@@ -59,6 +59,7 @@ import io.element.android.libraries.di.SessionScope
 import io.element.android.libraries.di.annotations.SessionCoroutineScope
 import io.element.android.libraries.matrix.api.MatrixClient
 import io.element.android.libraries.matrix.api.core.RoomId
+import io.element.android.features.home.impl.agents.AgentInfo
 import io.element.android.libraries.matrix.api.core.UserId
 import io.element.android.services.analytics.api.AnalyticsService
 import kotlinx.coroutines.CoroutineScope
@@ -222,54 +223,55 @@ class HomeFlowNode(
                 loadingJoinedRoomJob.value = AsyncData.Loading(job)
             }
 
-            // Magic wand: open the DM with the hermes agent, installing its
-            // backend in the user's cloud first when it is not there yet.
-            val hermesLaunch = remember { mutableStateOf<AsyncData<Unit>>(AsyncData.Uninitialized) }
-            if (hermesLaunch.value.isLoading()) {
+            // Agents page "Open chat": open the DM with the agent's bot, making
+            // sure its backend runs in the user's cloud first. The agent's
+            // Matrix localpart is its catalog appName (e.g. hermes).
+            val agentLaunch = remember { mutableStateOf<AsyncData<Unit>>(AsyncData.Uninitialized) }
+            if (agentLaunch.value.isLoading()) {
                 ProgressDialog(
                     properties = DialogProperties(dismissOnBackPress = false, dismissOnClickOutside = false),
                     onDismissRequest = {},
                 )
             }
-            (hermesLaunch.value as? AsyncData.Failure)?.let { failure ->
+            (agentLaunch.value as? AsyncData.Failure)?.let { failure ->
                 ErrorDialog(
                     title = stringResource(R.string.screen_roomlist_hermes_error_title),
                     content = failure.error.message ?: failure.error.toString(),
-                    onSubmit = { hermesLaunch.value = AsyncData.Uninitialized },
+                    onSubmit = { agentLaunch.value = AsyncData.Uninitialized },
                 )
             }
 
-            fun launchHermes() {
-                if (!hermesLaunch.value.isUninitialized()) return
-                hermesLaunch.value = AsyncData.Loading()
+            fun launchAgentChat(agent: AgentInfo) {
+                if (!agentLaunch.value.isUninitialized()) return
+                agentLaunch.value = AsyncData.Loading()
                 sessionCoroutineScope.launch {
                     runCatchingExceptions {
-                        val hermesUserId = UserId("@hermes:${matrixClient.userIdServerName()}")
-                        val existingDm = matrixClient.findDM(hermesUserId).getOrNull()
+                        val agentUserId = UserId("@${agent.appName}:${matrixClient.userIdServerName()}")
+                        val existingDm = matrixClient.findDM(agentUserId).getOrNull()
                         if (existingDm != null) {
                             existingDm
                         } else {
-                            // Not chatted yet: make sure the hermes app runs in the
+                            // Not chatted yet: make sure the agent app runs in the
                             // user's cloud (its bot account is minted on install),
                             // then start the DM.
                             try {
-                                Kumo.ensureBackend("hermes")
+                                Kumo.ensureBackend(agent.appName)
                             } catch (e: KumoException.SignInRequired) {
                                 // No cloud session (signed in to Matrix directly): if
                                 // the bot exists anyway, the DM creation below will
                                 // succeed; otherwise surface the error.
                                 Timber.w(e, "No cloud session, trying direct DM")
                             }
-                            matrixClient.createDM(hermesUserId).getOrThrow()
+                            matrixClient.createDM(agentUserId).getOrThrow()
                         }
                     }.fold(
                         onSuccess = { roomId ->
-                            hermesLaunch.value = AsyncData.Uninitialized
+                            agentLaunch.value = AsyncData.Uninitialized
                             navigateToRoom(roomId)
                         },
                         onFailure = {
-                            Timber.e(it, "Hermes launch failed")
-                            hermesLaunch.value = AsyncData.Failure(it)
+                            Timber.e(it, "Agent chat launch failed")
+                            agentLaunch.value = AsyncData.Failure(it)
                         },
                     )
                 }
@@ -280,7 +282,7 @@ class HomeFlowNode(
                 onRoomClick = ::navigateToRoom,
                 onSettingsClick = callback::navigateToSettings,
                 onStartChatClick = callback::navigateToCreateRoom,
-                onHermesClick = ::launchHermes,
+                onAgentChatClick = ::launchAgentChat,
                 onCreateSpaceClick = callback::navigateToCreateSpace,
                 onSetUpRecoveryClick = callback::navigateToSetUpRecovery,
                 onConfirmRecoveryKeyClick = callback::navigateToEnterRecoveryKey,

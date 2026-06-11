@@ -12,9 +12,6 @@ package io.element.android.features.home.impl
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Row
-import androidx.compose.ui.res.painterResource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.calculateEndPadding
@@ -46,6 +43,8 @@ import dev.chrisbanes.haze.materials.HazeMaterials
 import dev.chrisbanes.haze.rememberHazeState
 import io.element.android.compound.theme.ElementTheme
 import io.element.android.compound.tokens.generated.CompoundIcons
+import io.element.android.features.home.impl.agents.AgentInfo
+import io.element.android.features.home.impl.agents.HomeAgentsView
 import io.element.android.features.home.impl.components.HomeTopBar
 import io.element.android.features.home.impl.components.RoomListContentView
 import io.element.android.features.home.impl.components.RoomListMenuAction
@@ -82,7 +81,7 @@ fun HomeView(
     onSetUpRecoveryClick: () -> Unit,
     onConfirmRecoveryKeyClick: () -> Unit,
     onStartChatClick: () -> Unit,
-    onHermesClick: () -> Unit,
+    onAgentChatClick: (AgentInfo) -> Unit,
     onCreateSpaceClick: () -> Unit,
     onRoomSettingsClick: (roomId: RoomId) -> Unit,
     onMenuActionClick: (RoomListMenuAction) -> Unit,
@@ -123,7 +122,7 @@ fun HomeView(
             onRoomClick = { if (firstThrottler.canHandle()) onRoomClick(it) },
             onOpenSettings = { if (firstThrottler.canHandle()) onSettingsClick() },
             onStartChatClick = { if (firstThrottler.canHandle()) onStartChatClick() },
-            onHermesClick = { if (firstThrottler.canHandle()) onHermesClick() },
+            onAgentChatClick = { if (firstThrottler.canHandle()) onAgentChatClick(it) },
             onCreateSpaceClick = { if (firstThrottler.canHandle()) onCreateSpaceClick() },
             onMenuActionClick = onMenuActionClick,
         )
@@ -150,7 +149,7 @@ private fun HomeScaffold(
     onRoomClick: (RoomId) -> Unit,
     onOpenSettings: () -> Unit,
     onStartChatClick: () -> Unit,
-    onHermesClick: () -> Unit,
+    onAgentChatClick: (AgentInfo) -> Unit,
     onCreateSpaceClick: () -> Unit,
     onMenuActionClick: (RoomListMenuAction) -> Unit,
     modifier: Modifier = Modifier,
@@ -178,6 +177,7 @@ private fun HomeScaffold(
     val hazeState = rememberHazeState()
     val roomsLazyListState = rememberLazyListState()
     val spacesLazyListState = rememberLazyListState()
+    val agentsLazyListState = rememberLazyListState()
 
     Scaffold(
         modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -214,6 +214,7 @@ private fun HomeScaffold(
                         val lazyListStateTarget = when (item) {
                             HomeNavigationBarItem.Chats -> roomsLazyListState
                             HomeNavigationBarItem.Spaces -> spacesLazyListState
+                            HomeNavigationBarItem.Agents -> agentsLazyListState
                         }
                         coroutineScope.launch {
                             if (lazyListStateTarget.firstVisibleItemIndex > 10) {
@@ -227,18 +228,14 @@ private fun HomeScaffold(
                         state.eventSink(HomeEvent.SelectHomeNavigationBarItem(item))
                     }
                 },
-                floatingActionButton = {
-                    when (state.currentHomeNavigationBarItem) {
-                        HomeNavigationBarItem.Chats -> {
-                            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                                HomeFloatingActionButton(onStartChatClick, CommonStrings.action_create_room)
-                                HermesFloatingActionButton(onHermesClick)
-                            }
-                        }
-                        HomeNavigationBarItem.Spaces -> {
-                            HomeFloatingActionButton(onCreateSpaceClick, CommonStrings.action_create_space)
-                        }
+                floatingActionButton = when (state.currentHomeNavigationBarItem) {
+                    HomeNavigationBarItem.Chats -> {
+                        { HomeFloatingActionButton(onStartChatClick, CommonStrings.action_create_room) }
                     }
+                    HomeNavigationBarItem.Spaces -> {
+                        { HomeFloatingActionButton(onCreateSpaceClick, CommonStrings.action_create_space) }
+                    }
+                    HomeNavigationBarItem.Agents -> null
                 },
             )
         },
@@ -294,23 +291,23 @@ private fun HomeScaffold(
                         onExploreClick = {},
                     )
                 }
+                HomeNavigationBarItem.Agents -> {
+                    HomeAgentsView(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(padding)
+                            .consumeWindowInsets(padding)
+                            .hazeSource(state = hazeState),
+                        contentPadding = contentPadding,
+                        state = state.homeAgentsState,
+                        lazyListState = agentsLazyListState,
+                        onAgentChatClick = onAgentChatClick,
+                    )
+                }
             }
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },
     )
-}
-
-@Composable
-private fun HermesFloatingActionButton(
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    FloatingActionButton(onClick = onClick, modifier = modifier) {
-        Icon(
-            painter = painterResource(id = R.drawable.ic_magic_wand),
-            contentDescription = stringResource(id = R.string.screen_roomlist_a11y_open_hermes),
-        )
-    }
 }
 
 @Composable
@@ -367,7 +364,7 @@ internal fun HomeViewPreview(@PreviewParameter(HomeStateProvider::class) state: 
         onSetUpRecoveryClick = {},
         onConfirmRecoveryKeyClick = {},
         onStartChatClick = {},
-        onHermesClick = {},
+        onAgentChatClick = {},
         onCreateSpaceClick = {},
         onRoomSettingsClick = {},
         onReportRoomClick = {},
@@ -388,7 +385,7 @@ internal fun HomeViewA11yPreview() = ElementPreview {
         onSetUpRecoveryClick = {},
         onConfirmRecoveryKeyClick = {},
         onStartChatClick = {},
-        onHermesClick = {},
+        onAgentChatClick = {},
         onCreateSpaceClick = {},
         onRoomSettingsClick = {},
         onReportRoomClick = {},

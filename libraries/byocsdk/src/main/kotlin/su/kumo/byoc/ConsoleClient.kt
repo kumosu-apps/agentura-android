@@ -20,6 +20,10 @@ data class Backend(
     val phase: String?,
     /** Resolved runtime values from status.outputs, e.g. ingress URLs. */
     val outputs: Map<String, String>,
+    /** Whether the catalog marks this app as an autonomous agent. */
+    val agent: Boolean = false,
+    /** Realm API grant state; null when the app cannot receive a grant. */
+    val realmApi: RealmApiGrant? = null,
 ) {
     val ready: Boolean get() = phase == "Ready"
 
@@ -38,6 +42,37 @@ data class Backend(
                 clientId = spec.optString("clientId").ifEmpty { null },
                 phase = status.optString("phase").ifEmpty { null },
                 outputs = outputs,
+                agent = obj.optBoolean("agent", false),
+                realmApi = obj.optJSONObject("realmApi")?.let { RealmApiGrant.fromJson(it) },
+            )
+        }
+    }
+}
+
+/**
+ * State of an agent's realm-access grant: whether the app can receive one
+ * (declares the custom.byocApi dependency) and what the user delegated.
+ */
+data class RealmApiGrant(
+    val supported: Boolean,
+    val granted: Boolean,
+    val scopes: Set<String>,
+) {
+    companion object {
+        /** Scopes a user may delegate to an agent. */
+        const val SCOPE_APPS_READ = "apps:read"
+        const val SCOPE_APPS_INSTALL = "apps:install"
+        const val SCOPE_DRIVE_READ = "drive:read"
+
+        internal fun fromJson(obj: JSONObject): RealmApiGrant {
+            val scopes = mutableSetOf<String>()
+            obj.optJSONArray("scopes")?.let { raw ->
+                for (i in 0 until raw.length()) scopes.add(raw.optString(i))
+            }
+            return RealmApiGrant(
+                supported = obj.optBoolean("supported", false),
+                granted = obj.optBoolean("granted", false),
+                scopes = scopes,
             )
         }
     }
@@ -103,6 +138,25 @@ class ConsoleClient internal constructor(
 
     suspend fun deleteInstallation(name: String) {
         request("DELETE", "/installations/$name")
+    }
+
+    /** Installed apps the catalog marks as agents (e.g. hermes). */
+    suspend fun agents(): List<Backend> = installations().filter { it.agent }
+
+    /**
+     * Grants (or updates) the agent's realm API access: the realm provisions
+     * machine credentials for [scopes] and restarts the agent with them.
+     */
+    suspend fun setRealmGrant(name: String, scopes: Set<String>): RealmApiGrant {
+        val body = JSONObject().put("scopes", JSONArray(scopes.toList()))
+        return RealmApiGrant.fromJson(
+            JSONObject(request("PUT", "/installations/$name/realm-grant", body.toString()))
+        )
+    }
+
+    /** Revokes the agent's realm API access and credentials. */
+    suspend fun revokeRealmGrant(name: String) {
+        request("DELETE", "/installations/$name/realm-grant")
     }
 
     /**

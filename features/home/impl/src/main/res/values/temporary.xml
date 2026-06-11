@@ -1,5 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
-    <string name="screen_roomlist_a11y_open_hermes">Chat with your agent</string>
+    <string name="screen_home_tab_agents">Agents</string>
+    <string name="screen_home_agents_signed_out">Sign in with your cloud account to see and manage your agents.</string>
+    <string name="screen_home_agents_empty">No agents installed yet. Install one, like Hermes, from your cloud’s app catalog.</string>
+    <string name="screen_home_agents_open_chat">Open chat</string>
+    <string name="screen_home_agents_phase_unknown">Unknown</string>
+    <string name="screen_home_agents_realm_access_title">Realm access</string>
+    <string name="screen_home_agents_realm_access_subtitle">Let this agent act in your cloud using its own credentials, limited to what you check below.</string>
+    <string name="screen_home_agents_scope_apps_read">See installed applications</string>
+    <string name="screen_home_agents_scope_apps_install">Install and remove applications</string>
+    <string name="screen_home_agents_scope_drive_read">See drive folders</string>
+    <string name="screen_home_agents_error_title">Agent update failed</string>
     <string name="screen_roomlist_hermes_error_title">Couldn’t reach your agent</string>
 </resources>
